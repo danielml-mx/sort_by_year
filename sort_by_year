@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# The directory in which images are currently stored. Note that it ends with
+# "/*" so that it is the actual files that are captured.
+PICS_DIR=/mnt/101APPLE/*
+
+# The directory in which yearly directories will be created.
+SAVE_DIR=/mnt/personal
+
+# A directory for the year will be created, then inside of it a directory
+# with this name will be created, and it will be this one which will
+# actually hold the files. Why this is so is explained in the README.
+# Theoretically you could just leave this blank and the images will 
+# drop into the year's directory, but I haven't tested that.
+DROP_DIR_NAME=iphone_pics
+
+# The directory in which images without the "Create Date" metadata
+# tag will be stored.
+UNMATCHED_DIR=/mnt/personal/iphone_pics_nodate
+
+# Decides whether the files will be copied or moved.
+ACTION=cp
+#ACTION=mv
+
+
+
+for pic in $PICS_DIR
+do
+	year=$( exiftool $pic | grep "Create Date" | sed 's/:/\n/g;s/ //g' | sed -n '2p' )
+
+	[ -z $year ] && CP_DIR=$UNMATCHED_DIR || CP_DIR="$SAVE_DIR/$year/$DROP_DIR_NAME" 
+
+	[ ! -d $CP_DIR ] && mkdir -p $CP_DIR
+
+	$ACTION -n $pic $CP_DIR/
+	
+done
